@@ -1,12 +1,35 @@
 # 🎓 Student GPA Predictor
 
-Herramienta predictiva que estima el **GPA final de estudiantes universitarios de primer semestre**, con el objetivo de identificar tempranamente a quienes necesitan apoyo académico.  
-El reto principal es diseñar una interfaz que sea **motivacional en lugar de desalentadora**, evitando sesgos por género/etnia/clase social, y que además ofrezca **recomendaciones accionables** tanto para estudiantes como para coordinadores académicos.
+## Problema
+Desarrollar una herramienta predictiva que estime el **GPA final** de estudiantes universitarios de primer semestre, con el objetivo de **identificar tempranamente a quienes podrían necesitar apoyo académico**. La solución debe ser ética, motivacional y ofrecer recomendaciones prácticas para mejorar el desempeño.
+
+## Tarea (Task)
+- Predecir un **valor numérico continuo**: el GPA final de cada estudiante.  
+- El enfoque principal será la **regresión**, utilizando técnicas lineales o no lineales según corresponda.  
+- La solución debe ser escalable y permitir futuras mejoras, como incluir interacciones entre variables o transformar la regresión lineal en una más compleja si se detectan relaciones no lineales.
+
+## Métrica (Metric)
+- Evaluar la calidad del modelo usando métricas de regresión, como:  
+  - **MSE (Mean Squared Error / Error Cuadrático Medio)**: informa sobre la magnitud promedio de los errores.  
+  - **R² (Coeficiente de Determinación)**: indica qué proporción de la variabilidad del GPA es explicada por el modelo.  
+- La métrica debe ser **informativa y práctica**, permitiendo comparar versiones del modelo y monitorear mejoras post-deployment.
+
+## Experiencia del Usuario (Experience)
+- La herramienta debe ser **motivacional y no desalentadora**:  
+  - Evitar mensajes negativos que puedan generar frustración.  
+  - Generar recomendaciones **específicas y accionables** para cada estudiante (por ejemplo, horas de estudio semanales, participación en tutorías, hábitos de aprendizaje).  
+- Evitar **sesgos por género, raza o clase social**:  
+  - El modelo no debe discriminar ni generar predicciones que dependan de estas variables.  
+- Diseñar **dos vistas distintas**:  
+  1. **Vista para estudiantes**: enfocada en motivación, progreso y mejora continua.  
+  2. **Vista para coordinadores académicos**: enfocada en identificación de riesgo, priorización de intervenciones y recursos disponibles.  
+- La interfaz debe ser **útil y accesible**, resolviendo el problema central de los stakeholders: estudiantes y coordinadores académicos.
+
 
 ---
 
 ## 📊 Dataset
-**Student Performance Prediction** – Kaggle  
+[Student Performance Prediction - Kaggle](https://www.kaggle.com/datasets)  
 
 ### Variables consideradas en el modelo:
 | Variable | Tipo | Descripción |
