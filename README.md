@@ -29,7 +29,7 @@ Desarrollar una herramienta predictiva que estime el **GPA final** de estudiante
 ---
 
 ## 📊 Dataset
-[Student Performance Prediction - Kaggle](https://www.kaggle.com/datasets)  
+[Student Performance Prediction - Kaggle](https://www.kaggle.com/datasets/rabieelkharoua/students-performance-dataset)  
 
 ### Variables consideradas en el modelo:
 | Variable | Tipo | Descripción |
@@ -44,8 +44,6 @@ Desarrollar una herramienta predictiva que estime el **GPA final** de estudiante
 | Music | Categórica | Música (0 = No, 1 = Sí) |
 | Volunteering | Categórica | Voluntariado (0 = No, 1 = Sí) |
 
-### Variables descartadas:
-- `StudentID`, `Gender`, `Ethnicity`, `ParentalEducation`, `GradeClass`, `GPA`
 
 ---
 
@@ -58,12 +56,12 @@ Desarrollar una herramienta predictiva que estime el **GPA final** de estudiante
 
 ---
 
-## ⚙️ Model
+## ⚙️ Modelo
 Se utilizó **Regresión Lineal** para predecir el GPA de los estudiantes, considerando únicamente variables relacionadas con estudio, tutoría, actividades extracurriculares y apoyo parental.  
 
 **Flujo del modelo:**  
 1. **Carga y preparación de datos**:  
-   - Se eliminaron columnas irrelevantes: `StudentID`, `Gender`, `Ethnicity`, `ParentalEducation`, `GradeClass`, `GPA`.  
+   - Se eliminaron columnas irrelevantes para el estudio: `StudentID`, `GradeClass`, `GPA`. 
    - Se definieron `X` como las variables predictoras y `y` como el GPA real.  
 
 2. **División de datos**:  
@@ -94,34 +92,81 @@ print("Mean Squared Error:", mse)
 ```python
 import joblib
 
-# Guardar modelo en un archivo .pkl
-joblib.dump(model, 'linear_regression_model.pkl')
-print("Modelo guardado como 'linear_regression_model.pkl'")
+print("\n=== Importancia de variables ===")
+if best_model[0] == "Lineal":
+    for var, peso in zip(x_train.columns, linear.coef_):
+        print(f"{var}: {peso:.4f}")
+elif best_model[0] == "Polinómica (deg=2)":
+    # Obtener nombres de features polinómicas
+    feature_names = poly2.named_steps['poly'].get_feature_names_out(x_train.columns)
+    for var, peso in zip(feature_names, poly2.named_steps['lin'].coef_):
+        print(f"{var}: {peso:.4f}")
+elif best_model[0] in ["Tree", "RandomForest"]:
+    model_to_use = tree if best_model[0]=="Tree" else forest
+    for var, imp in zip(x_train.columns, model_to_use.feature_importances_):
+        print(f"{var}: {imp:.4f}")
 ```
 
 ## Resultados
 
 - **Modelo entrenado:** Regresión Lineal  
-- **Evaluación:** Error Cuadrático Medio (MSE) en el conjunto de prueba: `[valor de mse]`  
-- **Variables más influyentes en la predicción del GPA:**  
-  1. `StudyTimeWeekly` – horas de estudio semanales  
-  2. `Tutoring` – participación en tutorías  
-  3. `ParentalSupport` – nivel de apoyo parental  
-- **Variables con menor peso pero que aportan:** `Extracurricular`, `Sports`, `Music`, `Volunteering`  
+- **Evaluación:** RMSE = 0.196, R² = 0.953 (mejor modelo según R²)  
+- **Comparación de modelos:**  
+  - Lineal: RMSE=0.196, R²=0.953  
+  - Polinómica (deg=2): RMSE=0.207, R²=0.948  
+  - Árbol de decisión: RMSE=0.337, R²=0.863  
+  - Random Forest: RMSE=0.243, R²=0.929  
 
-> 🔹 Los coeficientes del modelo permiten interpretar el impacto de cada variable, ayudando a identificar factores clave para mejorar el desempeño académico.
+- **Variables más influyentes en la predicción del GPA:**  
+  1. `StudyTimeWeekly` – horas de estudio semanales (+0.0290)  
+  2. `Tutoring` – participación en tutorías (+0.2581)  
+  3. `ParentalSupport` – nivel de apoyo parental (+0.1479)  
+
+- **Otras variables que aportan al modelo:**  
+  - `Extracurricular` (+0.1898)  
+  - `Sports` (+0.1843)  
+  - `Music` (+0.1518)  
+  - `Volunteering` (-0.0050)  
+  - `Age` (-0.0058)  
+  - `Gender` (+0.0107)  
+  - `Ethnicity_1` (+0.0097), `Ethnicity_2` (+0.0093), `Ethnicity_3` (+0.0121)  
+  - `ParentalEducation_1` (-0.0022), `ParentalEducation_2` (+0.0073), `ParentalEducation_3` (-0.0126), `ParentalEducation_4` (+0.0139)  
+
+- **Consideraciones en la app:**  
+  > 🔹 En la implementación de `app.py`, se **omitieron las variables demográficas** `Gender`, `Ethnicity` y `ParentalEducation`. Esto significa que, aunque el modelo las utiliza internamente para análisis y cálculo de coeficientes, la interfaz de usuario **no considera estas variables** para la predicción de GPA.  
+  > 🔹 Esto garantiza que la herramienta sea motivacional, justa y libre de sesgos por género, raza o nivel educativo de los padres, enfocándose únicamente en variables de comportamiento y apoyo académico (`StudyTimeWeekly`, `Tutoring`, `ParentalSupport`, `Extracurricular`, `Sports`, `Music`, `Volunteering`, `Age`, `Absences`).
 
 ---
 
 ## Discusión
 
-- Permite **identificar estudiantes en riesgo temprano**, brindando tiempo para implementar acciones correctivas.  
-- **Interfaz motivacional:** en lugar de alertas negativas, mostrar mensajes como “Áreas para mejorar y alcanzar tu potencial”.  
-- **Evita sesgos:** el modelo no utiliza datos sensibles como género o etnia.  
-- **Recomendaciones prácticas:**  
-  - **Para estudiantes:** aumentar horas de estudio, participar en tutorías, actividades extracurriculares o voluntariado.  
-  - **Para coordinadores académicos:** enfocar recursos de apoyo en los estudiantes identificados como en riesgo.  
+El desarrollo de la herramienta predictiva de GPA permitió analizar y modelar de manera efectiva el desempeño académico de estudiantes de primer semestre. A partir de los modelos evaluados (Lineal, Polinómica, Árbol de Decisión y Random Forest), la **Regresión Lineal** se identificó como la opción más adecuada, con un R² de 0.953 y RMSE de 0.196, demostrando un ajuste muy preciso a los datos.
 
-> 🔹 Este enfoque fomenta un **aprendizaje proactivo y equitativo**, centrado en fortalecer oportunidades y mejorar resultados académicos.
+### Interpretación de resultados
+Las variables con mayor impacto en la predicción del GPA fueron:
+
+- `Tutoring`: La participación en tutorías mostró la mayor influencia positiva, indicando que el acompañamiento académico directo tiene un efecto significativo en el desempeño.  
+- `StudyTimeWeekly`: Las horas de estudio semanales se correlacionan positivamente con un mejor GPA, confirmando la importancia de la dedicación al estudio.  
+- `ParentalSupport`: El apoyo familiar también mostró un impacto relevante, aunque menor que la participación activa en actividades académicas.  
+
+Otras variables, como `Extracurricular`, `Sports`, `Music` y `Volunteering`, también aportan al modelo, reflejando cómo la participación en actividades complementarias puede contribuir al bienestar y motivación del estudiante. Variables demográficas (`Gender`, `Ethnicity`, `ParentalEducation`) tienen coeficientes menores, y **no se consideraron en la app** para evitar sesgos.
+
+### Ética y diseño de la app
+Un aspecto crítico del proyecto fue garantizar que la herramienta **sea motivacional y libre de sesgos**. Para lograrlo:
+
+- La interfaz de usuario **no solicita ni utiliza información sobre género, etnia o nivel educativo de los padres**, evitando cualquier sesgo indirecto en la predicción.  
+- Se proporciona retroalimentación constructiva, diferenciando entre estudiantes que necesitan apoyo y aquellos con buen desempeño, **enfocándose en acciones concretas y motivacionales**.  
+- La app ofrece dos vistas:  
+  - **Estudiante:** Consejos personalizados y motivacionales.  
+  - **Coordinador:** Identificación de estudiantes en riesgo y recomendaciones de intervención.
+
+### Limitaciones
+- El modelo se entrenó con datos de primer semestre, por lo que su generalización a otros ciclos podría ser limitada.  
+- La omisión de variables demográficas, si bien ética, puede eliminar información estadísticamente relevante; sin embargo, esto fue un compromiso necesario para priorizar la equidad.  
+- La herramienta depende de la correcta entrada de datos por parte del usuario; errores en el registro de horas de estudio o ausencias podrían afectar la predicción.
+
+### Conclusión
+La herramienta demuestra que es posible crear un sistema predictivo de desempeño académico **preciso, motivacional y ético**. La selección de variables de comportamiento y apoyo académico permite generar recomendaciones útiles sin introducir sesgos, cumpliendo con el objetivo de identificar estudiantes que requieren intervención temprana y fomentar hábitos positivos desde el inicio de su vida universitaria.
+
 
 
