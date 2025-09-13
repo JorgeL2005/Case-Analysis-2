@@ -18,7 +18,6 @@ st.title("🎓 Student GPA Predictor")
 view = st.sidebar.selectbox("Selecciona la vista", ["Estudiante", "Coordinador"])
 st.header(f"Vista: {view}")
 
-# Inputs de usuario
 col1, col2 = st.columns([1,1])
 
 with col1:
@@ -52,7 +51,6 @@ if st.button("📌 Calcular GPA"):
     }
     df_input = pd.DataFrame(input_dict)
     
-    # Asegurar columnas del modelo
     for col in model_columns:
         if col not in df_input.columns:
             df_input[col] = 0
@@ -66,7 +64,6 @@ if st.button("📌 Calcular GPA"):
     st.metric("🎯 GPA Predicho", f"{pred_gpa:.2f}")
     st.info(f"⏱ Tiempo de cálculo: {round(end-start,3)} segundos")
     
-    # Asignar letra y color
     if pred_gpa >= 3.5: grade = "A"; color="green"
     elif pred_gpa >= 3.0: grade="B"; color="blue"
     elif pred_gpa >= 2.5: grade="C"; color="orange"
@@ -88,7 +85,6 @@ if st.button("📌 Calcular GPA"):
         """, unsafe_allow_html=True
     )
     
-    # Recomendaciones
     if view=="Estudiante":
         st.subheader("💡 Recomendaciones para mejorar")
         if pred_gpa < 3.0:
