@@ -6,13 +6,12 @@ import time
 
 @st.cache_resource
 def load_model():
-    model = joblib.load("linear_regression_model.pkl")
-    cols = joblib.load("model_columns.pkl")
-    return model, cols
+    model = joblib.load("best_model.pkl")
+    return model
 
-model, model_columns = load_model()
+model = load_model()
 
-st.set_page_config(page_title="Student GPA Predictor", layout="wide")
+st.set_page_config(page_title="🎓 Student GPA Predictor", layout="wide")
 st.title("🎓 Student GPA Predictor")
 
 view = st.sidebar.selectbox("Selecciona la vista", ["Estudiante", "Coordinador"])
@@ -42,34 +41,31 @@ if st.button("📌 Calcular GPA"):
         'Age':[Age],
         'StudyTimeWeekly':[StudyTimeWeekly],
         'Absences':[Absences],
-        'Tutoring':[Tutoring],
         'ParentalSupport':[ParentalSupport],
+        'Tutoring':[Tutoring],
         'Extracurricular':[Extracurricular],
         'Sports':[Sports],
         'Music':[Music],
         'Volunteering':[Volunteering]
     }
+
     df_input = pd.DataFrame(input_dict)
-    
+    model_columns = model.feature_names_in_ if hasattr(model, 'feature_names_in_') else df_input.columns
     for col in model_columns:
         if col not in df_input.columns:
             df_input[col] = 0
     df_input = df_input[model_columns]
-    
-    start = time.time()
-    pred_gpa = model.predict(df_input)[0]
-    end = time.time()
-    pred_gpa = round(pred_gpa,2)
-    
+
+    pred_gpa = round(model.predict(df_input)[0],2)
+
     st.metric("🎯 GPA Predicho", f"{pred_gpa:.2f}")
-    st.info(f"⏱ Tiempo de cálculo: {round(end-start,3)} segundos")
-    
+
     if pred_gpa >= 3.5: grade = "A"; color="green"
     elif pred_gpa >= 3.0: grade="B"; color="blue"
     elif pred_gpa >= 2.5: grade="C"; color="orange"
     elif pred_gpa >= 2.0: grade="D"; color="red"
-    else: grade="F"; color="black"
-    
+    else: grade="F"; color="purple"
+
     st.markdown(
         f"""
         <div style="text-align:center; font-size:36px; font-weight:bold;">
@@ -77,33 +73,33 @@ if st.button("📌 Calcular GPA"):
             <span style="color:{'blue' if grade=='B' else '#ccc'};">B</span>&nbsp;&nbsp;
             <span style="color:{'orange' if grade=='C' else '#ccc'};">C</span>&nbsp;&nbsp;
             <span style="color:{'red' if grade=='D' else '#ccc'};">D</span>&nbsp;&nbsp;
-            <span style="color:{'black' if grade=='F' else '#ccc'};">F</span>
+            <span style="color:{'purple' if grade=='F' else '#ccc'};">F</span>
         </div>
         <div style="text-align:center; font-size:64px; font-weight:bold; color:{color}; margin-top:10px;">
             {grade}
         </div>
         """, unsafe_allow_html=True
     )
-    
+
     if view=="Estudiante":
-        st.subheader("💡 Recomendaciones para mejorar")
+        st.subheader("💡 Consejos motivacionales y recomendaciones")
         if pred_gpa < 3.0:
-            if StudyTimeWeekly < 5: st.write("- Incrementa tus horas de estudio semanales.")
-            if Tutoring==0: st.write("- Considera participar en tutorías.")
-            if Absences>5: st.write("- Reduce tus ausencias para mantener continuidad en clases.")
-            if Extracurricular==0: st.write("- Participa en actividades extracurriculares para motivación.")
-            st.write("- Mantén comunicación con tus profesores y compañeros.")
+            st.success("¡Puedes mejorar! Aquí algunas acciones para aumentar tu GPA:")
+            st.write("- Incrementa gradualmente tus horas de estudio semanales.")
+            st.write("- Participa en tutorías para reforzar tus conocimientos.")
+            st.write("- Reduce ausencias y mantén constancia en clases.")
+            st.write("- Únete a actividades extracurriculares que te motiven.")
         else:
-            st.write("- Continúa con tus buenos hábitos de estudio.")
-            st.write("- Participa en actividades que te motiven y te diviertan.")
-            st.write("- Comparte tus estrategias de éxito con tus compañeros.")
-    
+            st.success("¡Excelente desempeño! Mantén estos hábitos:")
+            st.write("- Continúa con tu dedicación al estudio.")
+            st.write("- Participa en actividades que disfrutes y te inspiren.")
+            st.write("- Comparte tus estrategias exitosas con compañeros.")
+
     if view=="Coordinador":
         st.subheader("📌 Análisis para Coordinadores")
         if pred_gpa < 3.0:
-            st.write("- Estudiante en riesgo académico.")
-            st.write("- Recomendar seguimiento personalizado y tutorías adicionales.")
-            st.write("- Ofrecer recursos: talleres de estudio, mentorías, programas extracurriculares.")
+            st.warning("Estudiante identificado con riesgo académico.")
+            st.write("- Considerar seguimiento personalizado y tutorías.")
+            st.write("- Ofrecer recursos motivacionales y programas de apoyo.")
         else:
-            st.write("- Estudiante con desempeño adecuado.")
-            st.write("- Mantener monitoreo y motivación continua.")
+            st.info("Estudiante con desempeño adecuado. Mantener seguimiento motivacional.")
