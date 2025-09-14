@@ -1,8 +1,6 @@
 import streamlit as st
 import joblib
 import pandas as pd
-import numpy as np
-import time
 
 @st.cache_resource
 def load_model():
@@ -28,6 +26,10 @@ with col1:
         options=[0,1,2,3,4],
         format_func=lambda x: {0:"Ninguno",1:"Bajo",2:"Moderado",3:"Alto",4:"Muy alto"}[x]
     )
+    ParentalEducation = st.selectbox(
+        "🎓 Educación de los padres",
+        options=["HighSchool","Bachelor","Master","PhD"]
+    )
 
 with col2:
     Tutoring = 1 if st.checkbox("👩‍🏫 Tutoría", value=False) else 0
@@ -37,6 +39,7 @@ with col2:
     Volunteering = 1 if st.checkbox("🤝 Voluntariado", value=False) else 0
 
 if st.button("📌 Calcular GPA"):
+    # Variables base
     input_dict = {
         'Age':[Age],
         'StudyTimeWeekly':[StudyTimeWeekly],
@@ -46,20 +49,27 @@ if st.button("📌 Calcular GPA"):
         'Extracurricular':[Extracurricular],
         'Sports':[Sports],
         'Music':[Music],
-        'Volunteering':[Volunteering]
+        'Volunteering':[Volunteering],
+        'ParentalEducation':[ParentalEducation]
     }
 
     df_input = pd.DataFrame(input_dict)
-    model_columns = model.feature_names_in_ if hasattr(model, 'feature_names_in_') else df_input.columns
+
+    # Aplicar get_dummies como en el entrenamiento
+    df_input = pd.get_dummies(df_input, columns=['ParentalEducation'], drop_first=True)
+
+    # Alinear columnas con el modelo entrenado
+    model_columns = model.feature_names_in_
     for col in model_columns:
         if col not in df_input.columns:
             df_input[col] = 0
     df_input = df_input[model_columns]
 
+    # Predicción
     pred_gpa = round(model.predict(df_input)[0],2)
-
     st.metric("🎯 GPA Predicho", f"{pred_gpa:.2f}")
 
+    # Clasificación por letra
     if pred_gpa >= 3.5: grade = "A"; color="green"
     elif pred_gpa >= 3.0: grade="B"; color="blue"
     elif pred_gpa >= 2.5: grade="C"; color="orange"
@@ -81,6 +91,7 @@ if st.button("📌 Calcular GPA"):
         """, unsafe_allow_html=True
     )
 
+    # Recomendaciones según vista
     if view=="Estudiante":
         st.subheader("💡 Consejos motivacionales y recomendaciones")
         if pred_gpa < 3.0:
