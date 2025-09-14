@@ -87,9 +87,7 @@ def get_usage_stats(log_path=str(LOG_FILE)):
     }
 
 with st.sidebar:
-    view = st.selectbox("Selecciona la vista", ["Estudiante", "Coordinador"])
-
-    # ----- Estadísticas debajo del selector -----
+    # ----- Estadísticas -----
     stats = get_usage_stats()
     st.divider()
     st.subheader("📊 Estadísticas de uso")
